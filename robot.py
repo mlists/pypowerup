@@ -94,6 +94,15 @@ class Robot(magicbot.MagicRobot):
 
         This is run each iteration of the control loop before magicbot components are executed.
         """
+        if self.joystick.getTrigger():
+            self.intake_automation.engage()
+
+        if self.joystick.getRawButtonPressed(2):
+            self.intake_automation.engage(initial_state="deposit")
+
+        if self.joystick.getRawButtonPressed(4):
+            self.intake_automation.engage(initial_state="stop")
+
         if self.joystick.getTriggerPressed():
             self.intake_automation.engage()
 

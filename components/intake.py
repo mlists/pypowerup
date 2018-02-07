@@ -1,6 +1,5 @@
 from ctre import WPI_TalonSRX
 import wpilib
-import math
 
 
 class Intake:
@@ -12,10 +11,12 @@ class Intake:
     extension_arm_right: wpilib.Solenoid
     infrared: wpilib.AnalogInput
     cube_switch: wpilib.DigitalInput
+    joystick: wpilib.Joystick
 
     def setup(self):
         """This is called after variables are injected by magicbot."""
-        pass
+        self.intake_right.set(self.intake_right.ControlMode.Follower, 2)
+        self.intake_right.setInverted(True)
 
     def on_enable(self):
         """This is called whenever the robot transitions to being enabled."""
@@ -32,7 +33,7 @@ class Intake:
     def intake_rotate(self, value):
         """Turns intake mechanism on."""
         self.intake_left.set(value)
-        self.intake_right.set(value)
+        # self.intake_right.set(value)
 
     def intake_disable(self):
         """Turns intake mechanism off."""
@@ -56,21 +57,18 @@ class Intake:
         infrared_voltage = self.infrared.getVoltage()
         """Makes sure that the voltage is above 0.00001"""
         voltage = max(infrared_voltage, 0.00001)
-        distance = 12.84*math.pow(voltage, -0.9824)
-        """This makes sure that the distance is above 4.5 and below 35"""
+        distance = 12.84 * voltage ** -0.9824
+        """This makes sure that the distance is above 4.5cm and below 35cm"""
         self.cube_distance = max(min(distance, 35.0), 4.5)
+        print(self.cube_distance, "cm")
 
     def cube_inside(self):
         """Run when the limit switch is pressed and when the current
         output is above a threshold, which stops the motors."""
-        if self.cube_switch.get():
-            print("Cube is inside")
+        if not self.cube_switch.get():
+            print("limit switch pressed")
             return True
         # if 10 <= self.cube_distance <= 15:
-        #     return True
-        return False
-
-    def button_press(self):
-        if self.joystick.getButton(2):
-            return True
+            # return True
+        print("limit switch not pressed")
         return False
