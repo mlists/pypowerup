@@ -12,7 +12,9 @@ class IntakeAutomation(StateMachine):
     def intake_cube(self):
         """Starts the intake motors while waiting for the cube be seen by the
         infrared sensor"""
+
         if self.intake.cube_inside():
+            print("Cube inside")
             self.intake.intake_rotate(0.0)
             self.intake.extension(False)
             self.intake.intake_clamp(False)
@@ -20,12 +22,14 @@ class IntakeAutomation(StateMachine):
             self.intake.extension(True)
             self.done()
         else:
+            print("Cube not inside")
             self.intake.intake_rotate(1)
             self.intake.extension(True)
 
     @state(must_finish=True)
     def clamp(self):
         """Grabs cube and starts lifter state machine"""
+        print("Closing containment area")
         self.intake.intake_clamp(True)
         self.intake.intake_push(False)
         self.lifter_automation.engage()
@@ -34,6 +38,7 @@ class IntakeAutomation(StateMachine):
     @state(must_finish=True)
     def deposit(self):
         """Deposit cube."""
+        print("Depositing cube")
         self.intake.intake_rotate(-1)
         self.done()
 

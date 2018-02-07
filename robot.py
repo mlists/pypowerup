@@ -84,7 +84,6 @@ class Robot(magicbot.MagicRobot):
         self.motion.enabled = False
         self.chassis.set_inputs(0, 0, 0)
 
-
     def teleopPeriodic(self):
         """
         Process inputs from the driver station here.
@@ -120,7 +119,7 @@ class Robot(magicbot.MagicRobot):
         # to the chassis component. we rescale them using the rescale_js function,
         # in order to make their response exponential, and to set a dead zone -
         # which just means if it is under a certain value a 0 will be sent
-        # TODO: Tune these constants forvwhatever robot they are on
+        # TODO: Tune these constants for whatever robot they are on
         vx = -rescale_js(self.joystick.getY(), deadzone=0.05, exponential=1.2, rate=4)
         vy = -rescale_js(self.joystick.getX(), deadzone=0.05, exponential=1.2, rate=4)
         vz = -rescale_js(self.joystick.getZ(), deadzone=0.4, exponential=15.0, rate=self.spin_rate)
