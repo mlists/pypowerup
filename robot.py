@@ -84,9 +84,6 @@ class Robot(magicbot.MagicRobot):
         self.motion.enabled = False
         self.chassis.set_inputs(0, 0, 0)
 
-        self.intake.intake_clamp(False)
-        self.intake.intake_push(False)
-        self.intake.extension(True)
 
     def teleopPeriodic(self):
         """

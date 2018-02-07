@@ -15,6 +15,9 @@ class IntakeAutomation(StateMachine):
         if self.intake.cube_inside():
             self.intake.intake_rotate(0.0)
             self.intake.extension(False)
+            self.intake.intake_clamp(False)
+            self.intake.intake_push(False)
+            self.intake.extension(True)
             self.done()
         else:
             self.intake.intake_rotate(1)
