@@ -63,7 +63,6 @@ class Intake:
         # if not self.cube_switch.get():
         # print("limit switch pressed")
         # return True
-        if 10 <= self.cube_distance <= 15:
+        if 100 <= self.cube_distance <= 150:
             return True
-        print("limit switch not pressed")
         return False
