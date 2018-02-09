@@ -16,6 +16,8 @@ from pyswervedrive.swervemodule import SwerveModule
 from utilities.bno055 import BNO055
 from utilities.functions import rescale_js
 
+from robotpy_ext.common_drivers.distance_sensors import SharpIRGP2Y0A41SK0F
+
 import math
 
 
@@ -66,7 +68,7 @@ class Robot(magicbot.MagicRobot):
         self.intake_kicker = wpilib.Solenoid(1)
         self.extension_arm_left = wpilib.Solenoid(2)
         self.extension_arm_right = wpilib.Solenoid(3)
-        self.infrared = wpilib.AnalogInput(0)
+        self.infrared = SharpIRGP2Y0A41SK0F(0)
         self.lift_motor = ctre.WPI_TalonSRX(3)
         self.cube_switch = wpilib.DigitalInput(0)
 

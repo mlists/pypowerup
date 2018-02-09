@@ -15,7 +15,7 @@ class IntakeAutomation(StateMachine):
 
         if self.intake.cube_inside():
             print("Cube inside")
-            self.intake.intake_rotate(0.0)
+            self.intake.rotate_intake(0.0)
             self.intake.extension(False)
             self.intake.intake_clamp(False)
             self.intake.intake_push(False)
@@ -23,7 +23,7 @@ class IntakeAutomation(StateMachine):
             self.done()
         else:
             print("Cube not inside")
-            self.intake.intake_rotate(1)
+            self.intake.rotate_intake(1)
             self.intake.extension(True)
 
     @state(must_finish=True)
@@ -39,12 +39,12 @@ class IntakeAutomation(StateMachine):
     def deposit(self):
         """Deposit cube."""
         print("Depositing cube")
-        self.intake.intake_rotate(-1)
+        self.intake.rotate_intake(-1)
         self.done()
 
     @state(must_finish=True)
     def stop(self):
         """Stop moving motor."""
         print("Stopping")
-        self.intake.intake_rotate(0.0)
+        self.intake.rotate_intake(0.0)
         self.done()
