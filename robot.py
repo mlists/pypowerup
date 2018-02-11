@@ -15,7 +15,7 @@ from pyswervedrive.swervechassis import SwerveChassis
 from pyswervedrive.swervemodule import SwerveModule
 from utilities.navx import NavX
 from utilities.functions import rescale_js
-
+from networktables import NetworkTables
 import math
 
 
@@ -67,7 +67,6 @@ class Robot(magicbot.MagicRobot):
         self.extension_arm_left = wpilib.Solenoid(2)
         self.extension_arm_right = wpilib.Solenoid(3)
         self.infrared = wpilib.AnalogInput(0)
-        self.lift_motor = ctre.WPI_TalonSRX(3)
         self.cube_switch = wpilib.DigitalInput(0)
 
         self.lifter_motor = ctre.WPI_TalonSRX(3)
@@ -82,6 +81,8 @@ class Robot(magicbot.MagicRobot):
         self.gamepad = wpilib.XboxController(1)
 
         self.spin_rate = 5
+
+        self.sd = NetworkTables.getTable("SmartDashboard")
 
     def teleopInit(self):
         '''Called when teleop starts; optional'''
@@ -123,6 +124,12 @@ class Robot(magicbot.MagicRobot):
         vy = -rescale_js(self.joystick.getX(), deadzone=0.05, exponential=1.2, rate=4)
         vz = -rescale_js(self.joystick.getZ(), deadzone=0.4, exponential=15.0, rate=self.spin_rate)
         self.chassis.set_inputs(vx, vy, vz)
+
+    def robotPeriodic(self):
+        if self.lifter.set_pos is not None:
+            self.sd.putNumber("lift/set_pos", self.lifter.set_pos)
+        self.sd.putNumber("lift/pos", self.lifter.get_pos())
+        self.sd.putNumber("lift/velocity", self.lifter.motor.getQuadratureVelocity() / self.lifter.COUNTS_PER_METER)
 
 
 if __name__ == '__main__':
