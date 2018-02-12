@@ -1,4 +1,4 @@
-from magicbot import StateMachine, state
+from magicbot import StateMachine, state, timed_state
 from components.intake import Intake
 from automations.lifter import LifterAutomation
 
