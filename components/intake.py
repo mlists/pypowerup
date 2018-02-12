@@ -8,7 +8,8 @@ class Intake:
     intake_right: WPI_TalonSRX
     clamp_arm: wpilib.Solenoid
     intake_kicker: wpilib.Solenoid
-    extension_arms: wpilib.Solenoid
+    extension_arm_left: wpilib.Solenoid
+    extension_arm_right: wpilib.Solenoid
     infrared: SharpIRGP2Y0A41SK0F
     cube_switch: wpilib.DigitalInput
 
@@ -81,13 +82,7 @@ class Intake:
         # if not self.cube_switch.get():
         # print("limit switch pressed")
         # return True
-        # if 100 <= self.cube_distance <= 150:
-        # return True
-        # return False
-
-    def contacting_cube(self):
-        """Returns True of the current output of the motor is above 3"""
-        if self.intake_left.getOutputCurrent() >= 3:
+        if 100 <= self.cube_distance <= 150:
             return True
         else:
             return False

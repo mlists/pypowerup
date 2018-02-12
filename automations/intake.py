@@ -1,4 +1,4 @@
-from magicbot import StateMachine, state, timed_state
+from magicbot import StateMachine, state
 from components.intake import Intake
 from automations.lifter import LifterAutomation
 
@@ -8,31 +8,28 @@ class IntakeAutomation(StateMachine):
     intake: Intake
     lifter_automation: LifterAutomation
 
-    def on_enable(self):
-        if not self.intake.arms_out:
-            self.engage(initial_state="start")
-
     @state(first=True, must_finish=True)
-    def intake_cube(self, state_tm):
+    def intake_cube(self):
         """Starts the intake motors while waiting for the cube be seen by the
         infrared sensor"""
 
-        if self.intake.contacting_cube() and state_tm > 0.5:
-            self.intake.clamp_on(False)
-            self.next_state("pulling_in_cube")
-        else:
-            self.intake.rotate(-1)
+        if self.intake.cube_inside():
+            print("Cube inside")
+            self.intake.rotate_intake(0.0)
+            self.intake.extension(False)
+            self.intake.intake_clamp(False)
+            self.intake.intake_push(False)
             self.intake.extension(True)
-
-    @state(must_finish=True)
-    def holding(self):
-        self.intake.intake_clamp(True)
-        self.intake.intake_push(False)
-        self.next_state("stop")
+            self.done()
+        else:
+            print("Cube not inside")
+            self.intake.rotate_intake(1)
+            self.intake.extension(True)
 
     @state(must_finish=True)
     def clamp(self):
         """Grabs cube and starts lifter state machine"""
+        print("Closing containment area")
         self.intake.intake_clamp(True)
         self.intake.intake_push(False)
         self.lifter_automation.engage(initial_state="eject")
@@ -41,10 +38,9 @@ class IntakeAutomation(StateMachine):
     @state(must_finish=True)
     def deposit(self):
         """Deposit cube."""
-        if self.intake.contacting_cube():
-            self.next_state("push_out_cube")
-        else:
-            self.intake.rotate(1)
+        print("Depositing cube")
+        self.intake.rotate_intake(-1)
+        self.done()
 
     @state(must_finish=True)
     def stop(self):
@@ -81,4 +77,6 @@ class IntakeAutomation(StateMachine):
     def reset_containment(self):
         self.intake.clamp_on(False)
         self.intake.intake_push(False)
+        print("Stopping")
+        self.intake.rotate_intake(0.0)
         self.done()

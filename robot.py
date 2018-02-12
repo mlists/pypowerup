@@ -18,6 +18,7 @@ from utilities.functions import rescale_js
 from robotpy_ext.common_drivers.distance_sensors import SharpIRGP2Y0A41SK0F
 
 from networktables import NetworkTables
+
 import math
 
 
@@ -93,25 +94,23 @@ class Robot(magicbot.MagicRobot):
         self.motion.enabled = False
         self.chassis.set_inputs(0, 0, 0)
 
-        self.intake.intake_clamp(False)
-        self.intake.intake_push(False)
-        self.intake.extension(True)
-
     def teleopPeriodic(self):
         """
         Process inputs from the driver station here.
 
         This is run each iteration of the control loop before magicbot components are executed.
         """
+        if self.joystick.getTrigger():
+            self.intake_automation.engage()
 
-        if self.joystick.getRawButtonPressed(3):
-            self.intake_automation.engage(initial_state="intake_cube")
-
-        if self.joystick.getRawButtonPressed(6):
+        if self.joystick.getRawButtonPressed(2):
             self.intake_automation.engage(initial_state="deposit")
 
         if self.joystick.getRawButtonPressed(4):
-            self.intake_automation.engage(initial_state='eject_cube')
+            self.intake_automation.engage(initial_state="stop")
+
+        if self.joystick.getTriggerPressed():
+            self.intake_automation.engage()
 
         if self.joystick.getRawButtonPressed(10):
             self.chassis.odometry_x = 0.0
