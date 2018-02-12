@@ -17,6 +17,7 @@ from utilities.navx import NavX
 from utilities.functions import rescale_js
 from robotpy_ext.common_drivers.distance_sensors import SharpIRGP2Y0A41SK0F
 
+from networktables import NetworkTables
 import math
 
 
@@ -65,10 +66,16 @@ class Robot(magicbot.MagicRobot):
         self.intake_right = ctre.WPI_TalonSRX(2)
         self.clamp_arm = wpilib.Solenoid(0)
         self.intake_kicker = wpilib.Solenoid(1)
-        self.extension_arms = wpilib.Solenoid(3)
+        self.lift_motor = ctre.WPI_TalonSRX(4)
+        self.extension_arm_left = wpilib.Solenoid(2)
+        self.extension_arm_right = wpilib.Solenoid(3)
         self.infrared = SharpIRGP2Y0A41SK0F(0)
-        self.lift_motor = ctre.WPI_TalonSRX(3)
         self.cube_switch = wpilib.DigitalInput(0)
+
+        self.lifter_motor = ctre.WPI_TalonSRX(3)
+        self.lifter_motor.setQuadraturePosition(0, timeoutMs=10)
+        self.center_switch = wpilib.DigitalInput(1)
+        self.top_switch = wpilib.DigitalInput(2)
 
         # create the imu object
         self.imu = NavX.create_spi(update_rate_hz=100)
@@ -78,6 +85,8 @@ class Robot(magicbot.MagicRobot):
         self.gamepad = wpilib.XboxController(1)
 
         self.spin_rate = 5
+
+        self.sd = NetworkTables.getTable("SmartDashboard")
 
     def teleopInit(self):
         '''Called when teleop starts; optional'''
@@ -126,6 +135,13 @@ class Robot(magicbot.MagicRobot):
         vy = -rescale_js(self.joystick.getX(), deadzone=0.05, exponential=1.2, rate=4)
         vz = -rescale_js(self.joystick.getZ(), deadzone=0.4, exponential=15.0, rate=self.spin_rate)
         self.chassis.set_inputs(vx, vy, vz)
+
+    def robotPeriodic(self):
+        if self.lifter.set_pos is not None:
+            self.sd.putNumber("lift/set_pos", self.lifter.set_pos)
+        self.sd.putNumber("lift/pos", self.lifter.get_pos())
+        self.sd.putNumber("lift/velocity", self.lifter.motor.getSelectedSensorVelocity(0) / self.lifter.COUNTS_PER_METER)
+        self.sd.putNumber("lift/current", self.lifter.motor.getOutputCurrent())
 
 
 if __name__ == '__main__':
