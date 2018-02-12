@@ -51,9 +51,11 @@ class Intake:
             self.intake_kicker.set(False)
 
         if self.extension_on:
-            self.extension_arms.set(True)
+            self.extension_arm_left.set(True)
+            self.extension_arm_right.set(True)
         else:
-            self.extension_arms.set(False)
+            self.extension_arm_left.set(False)
+            self.extension_arm_right.set(False)
 
     def rotate(self, value):
         """Turns intake mechanism on."""
