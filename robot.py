@@ -95,11 +95,14 @@ class Robot(magicbot.MagicRobot):
         This is run each iteration of the control loop before magicbot components are executed.
         """
 
-        if self.gamepad.getBButtonPressed():
+        if self.joystick.getRawButtonPressed(3):
             self.intake_automation.engage(initial_state="intake_cube")
 
-        if self.gamepad.getAButtonPressed():
+        if self.joystick.getRawButtonPressed(6):
             self.intake_automation.engage(initial_state="deposit")
+
+        if self.joystick.getRawButtonPressed(4):
+            self.intake_automation.engage(initial_state='eject_cube')
 
         if self.joystick.getRawButtonPressed(10):
             self.chassis.odometry_x = 0.0
