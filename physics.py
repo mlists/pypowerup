@@ -5,6 +5,7 @@ import numpy as np
 
 from robot import Robot
 from pyswervedrive.swervemodule import SwerveModule
+from components.lifter import Lifter
 from utilities.functions import constrain_angle
 
 
@@ -12,6 +13,7 @@ class PhysicsEngine:
 
     X_WHEELBASE = 0.50
     Y_WHEELBASE = 0.62
+    GRAVITY = 9.8
 
     targets = [(1, 1), (2, 2)]
 
@@ -77,31 +79,21 @@ class PhysicsEngine:
 
         self.controller.vector_drive(vy, vx, vw, tm_diff)
 
-    def vision_sim(self):
-        pos_x = self.controller.x / 3.2808
-        pos_y = self.controller.y / 3.2808
-        pos_angle_deg = self.controller.angle
-        pos_angle = math.radians(-pos_angle_deg)
-        z_dist = -0.42 + 0.15
+        # lift simulation
+        hal_data["dio"][1]["value"] = True
+        hal_data["dio"][2]["value"] = True
 
-        for target in targets:
-            x_len = target[0] - pos_x
-            y_len = target[1] - pos_y
+        GRAVITY = self.GRAVITY * tm_diff**2 * Lifter.COUNTS_PER_METER
+        MAX_SPEED = Lifter.FREE_SPEED * 10 * tm_diff
 
-            fov = math.radians(75)/2
+        speed = hal_data["CAN"][3]["value"]
+        speed *= MAX_SPEED
+        pos = hal_data['CAN'][3]['quad_position']
 
-            field_angle = math.atan2(pos_y, pos_x)
+        hal_data['CAN'][3]['quad_position'] = int(pos + speed - GRAVITY)
+        hal_data['CAN'][3]['quad_velocity'] = int(speed)
 
-            distance = math.hypot(x_len, y_len)
-
-            output = []
-            angle = field_angle + (pos_angle - pos_angle/2)
-
-            if -fov <= angle <= fov and distance < 3.5:
-                zenith_angle = math.atan2(distance, z_dist)
-                output.extend([angle, zenith_angle])
-
-        return output
+        hal_data['CAN'][3]['quad_position'] = int(min(max(hal_data['CAN'][3]['quad_position'], Lifter.BOTTOM_HEIGHT * Lifter.COUNTS_PER_METER), Lifter.TOP_HEIGHT * Lifter.COUNTS_PER_METER))
 
 
 def better_four_motor_swerve_drivetrain(module_speeds, module_angles, module_x_offsets, module_y_offsets):
