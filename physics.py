@@ -1,5 +1,6 @@
 import math
 from pyswervedrive.swervemodule import SwerveModule
+from components.lifter import Lifter
 from utilities.functions import constrain_angle
 import numpy as np
 
@@ -8,6 +9,7 @@ class PhysicsEngine:
 
     X_WHEELBASE = 0.50
     Y_WHEELBASE = 0.62
+    GRAVITY = 9.8
 
     def __init__(self, controller):
         self.controller = controller
@@ -68,6 +70,22 @@ class PhysicsEngine:
         vx /= 0.3048
         vy /= 0.3048
         self.controller.vector_drive(vy, vx, vw, tm_diff)
+
+        # lift simulation
+        hal_data["dio"][1]["value"] = True
+        hal_data["dio"][2]["value"] = True
+
+        GRAVITY = self.GRAVITY * tm_diff**2 * Lifter.COUNTS_PER_METER
+        MAX_SPEED = Lifter.FREE_SPEED * 10 * tm_diff
+
+        speed = hal_data["CAN"][3]["value"]
+        speed *= MAX_SPEED
+        pos = hal_data['CAN'][3]['quad_position']
+
+        hal_data['CAN'][3]['quad_position'] = int(pos + speed - GRAVITY)
+        hal_data['CAN'][3]['quad_velocity'] = int(speed)
+
+        hal_data['CAN'][3]['quad_position'] = int(min(max(hal_data['CAN'][3]['quad_position'], Lifter.BOTTOM_HEIGHT * Lifter.COUNTS_PER_METER), Lifter.TOP_HEIGHT * Lifter.COUNTS_PER_METER))
 
 
 def better_four_motor_swerve_drivetrain(module_speeds, module_angles, module_x_offsets, module_y_offsets):
