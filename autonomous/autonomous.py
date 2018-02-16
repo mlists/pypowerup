@@ -181,7 +181,7 @@ class DoubleScaleBase(OverallBase):
 
 
 class LeftDoubleScale(DoubleScaleBase):
-    MODE_NAME = 'Left Double Scale'
+    MODE_NAME = 'Left Start Double Scale'
 
     def on_enable(self):
         super().on_enable()
@@ -198,7 +198,7 @@ class LeftDoubleScale(DoubleScaleBase):
 
 
 class RightDoubleScale(DoubleScaleBase):
-    MODE_NAME = 'Right Double Scale'
+    MODE_NAME = 'Right Start Double Scale'
 
     def on_enable(self):
         super().on_enable()
@@ -287,7 +287,7 @@ class SwitchScaleBase(OverallBase):
 
 
 class LeftSwitchScale(SwitchScaleBase):
-    MODE_NAME = 'Left Switch & Scale'
+    MODE_NAME = 'Left Start Switch & Scale'
 
     def on_enable(self):
         super().on_enable()
@@ -308,7 +308,7 @@ class LeftSwitchScale(SwitchScaleBase):
 
 
 class RightSwitchScale(SwitchScaleBase):
-    MODE_NAME = 'Right Switch & Scale'
+    MODE_NAME = 'Right Start Switch & Scale'
 
     def on_enable(self):
         super().on_enable()
