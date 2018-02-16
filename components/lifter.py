@@ -4,17 +4,17 @@ import wpilib
 
 class Lifter:
     motor: ctre.WPI_TalonSRX
-    center_switch: wpilib.DigitalInput
+    centre_switch: wpilib.DigitalInput
     top_switch: wpilib.DigitalInput
 
     #  TODO find encoder values, tune height values to include robot height and cube
     COUNTS_PER_REV = 4096
     NUM_TEETH = 42
     TEETH_DISTANCE = 0.005
-    COUNTS_PER_METER = COUNTS_PER_REV / (NUM_TEETH * TEETH_DISTANCE) / 2  # for height of dolly
+    COUNTS_PER_METRE = COUNTS_PER_REV / (NUM_TEETH * TEETH_DISTANCE) / 2  # for height of dolly
 
-    MOTOR_FREE_SPEED = 5310 / 600  # RPM to rotations/100ms
-    GEAR_RATIO = 1 / 6
+    MOTOR_FREE_SPEED = 5840 / 600  # RPM to rotations/100ms
+    GEAR_RATIO = 1 / 14
     FREE_SPEED = int(MOTOR_FREE_SPEED * GEAR_RATIO * COUNTS_PER_REV)  # counts/100ms
 
     TOP_HEIGHT = 2  # in m
@@ -33,6 +33,7 @@ class Lifter:
         """This is called after variables are injected by magicbot."""
         self.set_pos = None
 
+        self.motor.setQuadraturePosition(0, timeoutMs=10)
         self.motor.setInverted(True)
         self.motor.setNeutralMode(ctre.WPI_TalonSRX.NeutralMode.Brake)
 
@@ -46,20 +47,20 @@ class Lifter:
 
         self.motor.overrideSoftLimitsEnable(True)
         self.motor.configForwardSoftLimitEnable(True, timeoutMs=10)
-        self.motor.configForwardSoftLimitThreshold(self.meters_to_counts(self.TOP_HEIGHT), timeoutMs=10)
+        self.motor.configForwardSoftLimitThreshold(self.metres_to_counts(self.TOP_HEIGHT), timeoutMs=10)
         self.motor.configReverseSoftLimitEnable(True, timeoutMs=10)
-        self.motor.configReverseSoftLimitThreshold(self.meters_to_counts(self.BOTTOM_HEIGHT), timeoutMs=10)
+        self.motor.configReverseSoftLimitThreshold(self.metres_to_counts(self.BOTTOM_HEIGHT), timeoutMs=10)
 
         self.motor.configSelectedFeedbackSensor(ctre.WPI_TalonSRX.FeedbackDevice.QuadEncoder, 0, timeoutMs=10)
 
         # TODO tune motion profiling
         self.motor.selectProfileSlot(0, 0)
         self.motor.config_kF(0, 1023/self.FREE_SPEED, timeoutMs=10)
-        self.motor.config_kP(0, 0.5, timeoutMs=10)
-        self.motor.config_kI(0, 0.0005, timeoutMs=10)
-        self.motor.config_kD(0, 0.05, timeoutMs=10)
+        self.motor.config_kP(0, 0.7, timeoutMs=10)
+        self.motor.config_kI(0, 0, timeoutMs=10)
+        self.motor.config_kD(0, 0.1, timeoutMs=10)
 
-        self.motor.configMotionAcceleration(int(self.FREE_SPEED / 5), timeoutMs=10)
+        self.motor.configMotionAcceleration(int(self.FREE_SPEED*0.75), timeoutMs=10)
         self.motor.configMotionCruiseVelocity(self.FREE_SPEED, timeoutMs=10)
 
     def on_enable(self):
@@ -71,19 +72,16 @@ class Lifter:
 
     def execute(self):
         """Run at the end of every control loop iteration."""
-        current_pos = self.get_pos()
-        if self.is_almost_at_pos(current_pos):
-            self.move(current_pos)
 
-        if not self.center_switch.get():
-            self.motor.setSelectedSensorPosition(self.meters_to_counts(self.SWITCH), 0, timeoutMs=10)
+        if not self.centre_switch.get():
+            self.motor.setSelectedSensorPosition(self.metres_to_counts(self.SWITCH), 0, timeoutMs=10)
         if not self.top_switch.get():
-            self.motor.setSelectedSensorPosition(self.meters_to_counts(self.BALANCED_SCALE), 0, timeoutMs=10)
+            self.motor.setSelectedSensorPosition(self.metres_to_counts(self.BALANCED_SCALE), 0, timeoutMs=10)
         if self.motor.isRevLimitSwitchClosed():
-            self.motor.setSelectedSensorPosition(self.meters_to_counts(self.BOTTOM_HEIGHT), 0, timeoutMs=10)
+            self.motor.setSelectedSensorPosition(self.metres_to_counts(self.BOTTOM_HEIGHT), 0, timeoutMs=10)
 
-    def meters_to_counts(self, meters):
-        return int(meters * self.COUNTS_PER_METER)
+    def metres_to_counts(self, metres):
+        return int(metres * self.COUNTS_PER_METRE)
 
     def stop(self):
         """Stop the lift motor"""
@@ -100,7 +98,7 @@ class Lifter:
             input_setpos (int): Encoder position to move lift to in m.
         """
         self.set_pos = input_setpos
-        self.motor.set(self.motor.ControlMode.MotionMagic, self.meters_to_counts(self.set_pos))
+        self.motor.set(self.motor.ControlMode.MotionMagic, self.metres_to_counts(self.set_pos))
 
     def get_pos(self):
         """Returns encoder position on lift
@@ -108,7 +106,7 @@ class Lifter:
        Returns:
             int: The location of the lift
         """
-        return self.motor.getSelectedSensorPosition(0) / self.COUNTS_PER_METER
+        return self.motor.getSelectedSensorPosition(0) / self.COUNTS_PER_METRE
 
     def at_pos(self):
         """Finds if cube location is at setops and within threshold
@@ -119,6 +117,3 @@ class Lifter:
         if self.set_pos is None:
             return False
         return abs(self.set_pos - self.get_pos()) < self.THRESHOLD
-
-    def is_almost_at_pos(self, current_pos):
-        return self.at_pos() and current_pos != self.set_pos
