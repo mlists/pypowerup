@@ -39,7 +39,8 @@ class Intake:
         self.left_motor.set(self.motor_output)
         self.clamp_arm.set(self.clamp_on)
         self.intake_kicker.set(self.push_on)
-        self.extension_arms.set(self.extension_on)
+        self.extension_arm_left.set(self.extension_on)
+        self.extension_arm_right.set(self.extension_on)
 
         # Don't run the motors unless something else commands us to.
         self.motor_output = 0

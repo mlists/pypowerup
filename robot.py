@@ -71,12 +71,8 @@ class Robot(magicbot.MagicRobot):
         self.infrared = SharpIRGP2Y0A41SK0F(0)
 
         self.lifter_motor = ctre.WPI_TalonSRX(3)
-        self.centre_switch = wpilib.DigitalInput(1)
-        self.top_switch = wpilib.DigitalInput(2)
-
-        self.lifter_motor = ctre.WPI_TalonSRX(3)
         self.lifter_motor.setQuadraturePosition(0, timeoutMs=10)
-        self.center_switch = wpilib.DigitalInput(1)
+        self.centre_switch = wpilib.DigitalInput(1)
         self.top_switch = wpilib.DigitalInput(2)
 
         # create the imu object
