@@ -16,7 +16,7 @@ from pyswervedrive.swervemodule import SwerveModule
 from utilities.navx import NavX
 from utilities.functions import rescale_js
 from robotpy_ext.common_drivers.distance_sensors import SharpIRGP2Y0A41SK0F
-
+from networktables import NetworkTables
 import math
 
 
@@ -61,17 +61,19 @@ class Robot(magicbot.MagicRobot):
             x_pos=0.25, y_pos=-0.31,
             drive_free_speed=Robot.module_drive_free_speed)
 
-        self.intake_left = ctre.WPI_TalonSRX(14)
-        self.intake_right = ctre.WPI_TalonSRX(2)
+        self.intake_left_motor = ctre.WPI_TalonSRX(14)
+        self.intake_right_motor = ctre.WPI_TalonSRX(2)
         self.clamp_arm = wpilib.Solenoid(0)
         self.intake_kicker = wpilib.Solenoid(1)
         self.extension_arms = wpilib.Solenoid(3)
         self.infrared = SharpIRGP2Y0A41SK0F(0)
-        self.lift_motor = ctre.WPI_TalonSRX(3)
-        self.cube_switch = wpilib.DigitalInput(0)
+
+        self.lifter_motor = ctre.WPI_TalonSRX(3)
+        self.centre_switch = wpilib.DigitalInput(1)
+        self.top_switch = wpilib.DigitalInput(2)
 
         # create the imu object
-        self.imu = NavX.create_spi()
+        self.imu = NavX()
 
         # boilerplate setup for the joystick
         self.joystick = wpilib.Joystick(0)
@@ -79,14 +81,12 @@ class Robot(magicbot.MagicRobot):
 
         self.spin_rate = 5
 
+        self.sd = NetworkTables.getTable("SmartDashboard")
+
     def teleopInit(self):
         '''Called when teleop starts; optional'''
         self.motion.enabled = False
         self.chassis.set_inputs(0, 0, 0)
-
-        self.intake.intake_clamp(False)
-        self.intake.intake_push(False)
-        self.intake.extension(True)
 
     def teleopPeriodic(self):
         """
@@ -95,10 +95,16 @@ class Robot(magicbot.MagicRobot):
         This is run each iteration of the control loop before magicbot components are executed.
         """
 
-        if self.gamepad.getBButtonPressed():
+        if self.joystick.getRawButtonPressed(3):
             self.intake_automation.engage(initial_state="intake_cube")
 
-        if self.gamepad.getAButtonPressed():
+        if self.joystick.getRawButtonPressed(4):
+            self.intake_automation.engage(initial_state='eject_cube')
+
+        if self.joystick.getRawButtonPressed(5):
+            self.intake_automation.engage(initial_state="stop", force=True)
+
+        if self.joystick.getRawButtonPressed(6):
             self.intake_automation.engage(initial_state="deposit")
 
         if self.joystick.getRawButtonPressed(10):
@@ -123,6 +129,13 @@ class Robot(magicbot.MagicRobot):
         vy = -rescale_js(self.joystick.getX(), deadzone=0.05, exponential=1.2, rate=4)
         vz = -rescale_js(self.joystick.getZ(), deadzone=0.4, exponential=15.0, rate=self.spin_rate)
         self.chassis.set_inputs(vx, vy, vz)
+
+    def robotPeriodic(self):
+        if self.lifter.set_pos is not None:
+            self.sd.putNumber("lift/set_pos", self.lifter.set_pos)
+        self.sd.putNumber("lift/pos", self.lifter.get_pos())
+        self.sd.putNumber("lift/velocity", self.lifter.motor.getSelectedSensorVelocity(0) / self.lifter.COUNTS_PER_METRE)
+        self.sd.putNumber("lift/current", self.lifter.motor.getOutputCurrent())
 
 
 if __name__ == '__main__':
